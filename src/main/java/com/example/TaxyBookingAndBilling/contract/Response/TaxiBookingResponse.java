@@ -1,26 +1,25 @@
 package com.example.TaxyBookingAndBilling.contract.Response;
 
-import jakarta.validation.constraints.NotBlank;
+import com.example.TaxyBookingAndBilling.model.Taxi;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.Date;
+
+
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class BookingResponse {
-    private Long Id;
-    private Long userId;
-
-    private Long taxyId;
-
+public class TaxiBookingResponse {
+    private Taxi taxiId;
     private String pickupLocation;
-
     private String dropoffLocation;
-    private Double fare;
-    private LocalDateTime bookingTime;
+    private Date bookingTime;
+    private String status;
+
+    public TaxiBookingResponse(String  s) {
+    }
 }

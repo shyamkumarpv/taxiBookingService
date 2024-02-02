@@ -1,38 +1,38 @@
 package com.example.TaxyBookingAndBilling.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
+@Builder
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
-    @NotBlank
-    private Long userId;
-    @NotBlank
-    private Long taxyId;
-    @NotBlank
+    private Long id;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "userId",referencedColumnName = "id",unique=false)
+    private UserModel userId;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "taxiId",referencedColumnName = "id",unique=false)
+    private Taxi taxiId;
     private String pickupLocation;
-    @NotBlank
     private String dropoffLocation;
-    private Double fare;
-    private LocalDateTime bookingTime;
+    private String fare;
+    private Date bookingTime;
     private String status;
-
-
-
-
 }
+

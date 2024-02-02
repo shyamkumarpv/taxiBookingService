@@ -11,8 +11,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TaxiRequest {
+    @NotBlank
     private String driverName;
-
-    private Long licenseNumber;
+    @NotBlank
+    private String licenseNumber;
+    @NotBlank
     private String currentLocation;
 }
+

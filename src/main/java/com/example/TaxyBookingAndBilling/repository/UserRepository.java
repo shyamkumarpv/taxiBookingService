@@ -1,11 +1,11 @@
 package com.example.TaxyBookingAndBilling.repository;
 
-import com.example.TaxyBookingAndBilling.model.Booking;
-import com.example.TaxyBookingAndBilling.model.Taxi;
+import com.example.TaxyBookingAndBilling.model.UserModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface BookingRepository extends JpaRepository<Booking,Long> {
+public interface UserRepository extends JpaRepository<UserModel,Long> {
+//boolean existsByEmail(String email);
 
 }
