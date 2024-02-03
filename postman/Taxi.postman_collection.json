@@ -1,0 +1,114 @@
+{
+	"info": {
+		"_postman_id": "9b086914-ea8f-4658-b0b1-86af2af92f75",
+		"name": "Taxi",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "28648108"
+	},
+	"item": [
+		{
+			"name": "view booking",
+			"item": [
+				{
+					"name": "view booking",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8081/booking/1"
+					},
+					"response": []
+				},
+				{
+					"name": "bookingById",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "http://localhost:8081/booking/2"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "registration",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\":\"rahul\",\r\n    \"email\":\"rahul@gmail.com\",\r\n    \"password\":\"sam\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8081/v1/user/registration"
+			},
+			"response": []
+		},
+		{
+			"name": "addmoney",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"userId\":4,\r\n    \"amount\":1000\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8081/v1/user/addMoney"
+			},
+			"response": []
+		},
+		{
+			"name": "addtaxi",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": "http://localhost:8081/taxi/create"
+			},
+			"response": []
+		},
+		{
+			"name": "taxibooking",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"user\":1,\r\n    \"dropoffLocation\":\"kakkanad\",\r\n    \"pickupLocation\":\"aluva\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8081/booking/taxiBooking"
+			},
+			"response": []
+		},
+		{
+			"name": "bookingcompleted",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\":1,\r\n    \"distancce\":10\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8081/booking/completed"
+			},
+			"response": []
+		}
+	]
+}

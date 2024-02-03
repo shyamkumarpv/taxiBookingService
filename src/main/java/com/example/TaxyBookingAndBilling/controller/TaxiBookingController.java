@@ -1,6 +1,8 @@
 package com.example.TaxyBookingAndBilling.controller;
 
+import com.example.TaxyBookingAndBilling.contract.Request.BookingCompletedRequest;
 import com.example.TaxyBookingAndBilling.contract.Request.TaxiBookingRequest;
+import com.example.TaxyBookingAndBilling.contract.Response.BookingCompletedResponse;
 import com.example.TaxyBookingAndBilling.contract.Response.TaxiBookingResponse;
 import com.example.TaxyBookingAndBilling.service.TaxiBookingService;
 import lombok.RequiredArgsConstructor;
@@ -28,20 +30,9 @@ public class TaxiBookingController {
     public TaxiBookingResponse cancelBookingById(@PathVariable Long id){
         return taxiBookingService.cancelBookingById(id);
     }
+    @PostMapping("/completed")
+    public BookingCompletedResponse bookingCompleted(@RequestBody BookingCompletedRequest request){
+        return taxiBookingService.bookingCompleted(request);
+    }
 }
 
-
-//    @PostMapping("/book")
-//    public BookingResponse bookTaxi(@RequestBody BookingRequset bookingRequset){
-//       return taxiBookingService.bookTaxi(bookingRequset);
-//    }
-//    @GetMapping("/{bookingId}")
-//    public BookingResponse getBookingDetails (@PathVariable Long bookingId){
-//       return TaxiBookingService.getBookingDetails(bookingId);
-//    }
-//    @DeleteMapping("/{bookingId}")
-//    public BookingResponse cancelBooking (@PathVariable Long bookingId){
-//        return taxiBookingService.cancelBooking(bookingId);
-//
-//    }
-//}

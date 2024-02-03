@@ -26,5 +26,7 @@ public class Taxi {
     private boolean isAvailable;
 
 
+    public Taxi(long l, String name, String kl07007, String location) {
+    }
 }
 

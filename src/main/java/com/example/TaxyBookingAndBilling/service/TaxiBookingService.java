@@ -1,6 +1,8 @@
 package com.example.TaxyBookingAndBilling.service;
 
+import com.example.TaxyBookingAndBilling.contract.Request.BookingCompletedRequest;
 import com.example.TaxyBookingAndBilling.contract.Request.TaxiBookingRequest;
+import com.example.TaxyBookingAndBilling.contract.Response.BookingCompletedResponse;
 import com.example.TaxyBookingAndBilling.contract.Response.TaxiBookingResponse;
 import com.example.TaxyBookingAndBilling.model.Booking;
 import com.example.TaxyBookingAndBilling.model.Taxi;
@@ -51,6 +53,7 @@ public class TaxiBookingService {
         } else {
             return false;
         }
+
     }
 
     public TaxiBookingResponse viewBookingById(Long id) {
@@ -66,7 +69,46 @@ public class TaxiBookingService {
                 bookingRepository.findById(id)
                 .orElseThrow(
                         () -> new EntityNotFoundException("Booking not found with id" + id));
-        bookingRepository.delete(booking);
-        return new TaxiBookingResponse("booking" + booking.getTaxiId() + " has been deleted");
+        booking.setStatus("cancelled");
+        bookingRepository.save(booking);
+        return new TaxiBookingResponse("booking" + booking.getTaxiId() + " has been cancelled");
     }
+    public BookingCompletedResponse bookingCompleted(BookingCompletedRequest request) {
+        Booking booking = bookingRepository.findById(request.getId())
+                .orElseThrow(
+                        () -> new EntityNotFoundException("Booking not found"));
+        Long taxiId = booking.getTaxiId().getId();
+        Long balance = booking.getUserId().getAccountBalance();
+        Long userId = booking.getUserId().getId();
+        Long fare = request.getDistance() * 10L;
+        Taxi taxi = taxiRepository.findById(taxiId)
+                .orElseThrow(
+                        () -> new EntityNotFoundException("Taxi not found "));
+
+        UserModel userModel = userRepository.findById(userId)
+                .orElseThrow(
+                        () -> new EntityNotFoundException("User not found "));
+        if (balance < fare) {
+            throw new RuntimeException("Insufficient balance to book, please recharge");
+        } else {
+            booking.setDistance(request.getDistance());
+            booking.setFare(fare);
+            bookingRepository.save(booking);
+            taxi.setAvailable(true);
+            taxiRepository.save(taxi);
+            userModel.setAccountBalance(balance-fare);
+            userRepository.save(userModel);
+
+            BookingCompletedResponse response =new BookingCompletedResponse();
+            response.setId(booking.getId());
+            response.setFare(fare);
+            response.setDistance(request.getDistance());
+            System.out.println(response.getFare());
+
+            return response;
+
+        }
+
+    }
+
 }

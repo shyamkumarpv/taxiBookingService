@@ -19,7 +19,9 @@ public class TaxiBookingResponse {
     private String dropoffLocation;
     private Date bookingTime;
     private String status;
+    private Long fare;
 
-    public TaxiBookingResponse(String  s) {
+
+    public TaxiBookingResponse(String s) {
     }
 }

@@ -25,4 +25,5 @@ public class UserModel {
     private String password;
     private Long accountBalance;
 
+
 }

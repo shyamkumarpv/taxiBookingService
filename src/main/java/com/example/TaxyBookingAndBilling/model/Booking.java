@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Date;
 
@@ -19,6 +20,7 @@ import java.util.Date;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Setter
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,8 +33,10 @@ public class Booking {
     private Taxi taxiId;
     private String pickupLocation;
     private String dropoffLocation;
-    private String fare;
+    private Long fare;
     private Date bookingTime;
     private String status;
+    private Long distance;
+
 }
 
