@@ -4,15 +4,18 @@ import com.example.TaxyBookingAndBilling.contract.Request.AddMoneyRequest;
 import com.example.TaxyBookingAndBilling.contract.Request.LoginRequest;
 import com.example.TaxyBookingAndBilling.contract.Request.RegistrationRequest;
 import com.example.TaxyBookingAndBilling.contract.Response.LoginResponse;
-import com.example.TaxyBookingAndBilling.model.UserModel;
+import com.example.TaxyBookingAndBilling.model.User;
 import com.example.TaxyBookingAndBilling.repository.UserRepository;
 //import com.example.TaxyBookingAndBilling.security.JwtService;
 //import jakarta.persistence.EntityNotFoundException;
+import com.example.TaxyBookingAndBilling.security.JwtService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 //import org.springframework.security.authentication.AuthenticationManager;
 //import org.springframework.security.authentication.BadCredentialsException;
 //import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -22,24 +25,24 @@ import java.util.Optional;
 public class UserService {
     private  final UserRepository userRepository;
     private final ModelMapper modelMapper;
-//    private final PasswordEncoder passwordEncoder;
-//    private final JwtService jwtService;
-//    private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+
     public Long userRegistration(RegistrationRequest request){
-        UserModel userModel = UserModel.builder()
+        User user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
                 .accountBalance(0L)
-                .password(request.getPassword())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .build();
-        return userRepository.save(userModel).getId();
+        return userRepository.save(user).getId();
 
     }
     public boolean addMoney(AddMoneyRequest request) {
-        Optional<UserModel> user = userRepository.findById(request.getUserId());
+        Optional<User> user = userRepository.findById(request.getUserId());
         Long updatedBalance = user.get().getAccountBalance() + request.getAmount();
         if (user.isPresent()) {
-            UserModel userModel = user.get();
+            User userModel = user.get();
             userModel.setAccountBalance(updatedBalance);
             Long id = userRepository.save(userModel).getId();
             if (id != null){
@@ -52,18 +55,15 @@ public class UserService {
             return false;
         }
     }
-//    public LoginResponse authenticate(LoginRequest request) {
-//        UserModel userModel =
-//                userRepository
-//                        .findByEmail(request.getEmail())
-//                        .orElseThrow(() -> new EntityNotFoundException("User not found"));
-//
-//        if (!passwordEncoder.matches(request.getPassword(), userModel.getHashedPassword())) {
-//            throw new BadCredentialsException("Invalid credentials");
-//        }
-//
-//        String jwtToken = jwtService.generateToken(userModel);
-//
-//        return LoginResponse.builder().token(jwtToken).build();
-//    }
+    public LoginResponse userLogin(LoginRequest request) {
+        User user =
+                userRepository
+                        .findByEmail(request.getEmail())
+                        .orElseThrow(() -> new EntityNotFoundException("invalid login"));
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Login");
+        }
+        String jwtToken = jwtService.generateToken(user);
+        return LoginResponse.builder().token(jwtToken).build();
+    }
 }

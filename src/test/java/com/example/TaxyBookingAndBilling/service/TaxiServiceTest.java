@@ -1,11 +1,13 @@
 package com.example.TaxyBookingAndBilling.service;
 
 import com.example.TaxyBookingAndBilling.contract.Request.TaxiRequest;
+import com.example.TaxyBookingAndBilling.contract.Response.TaxiResponse;
 import com.example.TaxyBookingAndBilling.model.Taxi;
 import com.example.TaxyBookingAndBilling.repository.TaxiRepository;
 import com.example.TaxyBookingAndBilling.repository.UserRepository;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -26,6 +28,8 @@ public class TaxiServiceTest {
     private TaxiService taxiService;
     @Mock
     private TaxiRepository taxiRepository;
+    @Mock
+    private ModelMapper modelMapper;
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
@@ -33,11 +37,11 @@ public class TaxiServiceTest {
     @Test
     public void testCreateTaxi() {
         TaxiRequest request = new TaxiRequest("shyam", "KL01A0001", "Location");
-        Taxi savedTaxi = new Taxi(1L, "shyam", "KL01A0001", "Location", true);
-        when(taxiRepository.save(any(Taxi.class))).thenReturn(savedTaxi);
-        Long taxiId = taxiService.createTaxi(request);
-        verify(taxiRepository, times(1)).save(any(Taxi.class));
-
+        Taxi taxi = modelMapper.map(request,Taxi.class);
+        TaxiResponse expectedResponse = modelMapper.map(request,TaxiResponse.class);
+        when(taxiRepository.save(any(Taxi.class))).thenReturn(taxi);
+       TaxiResponse actualResponse = taxiService.createTaxi(request);
+        assertEquals(expectedResponse, actualResponse);
     }
 
 }

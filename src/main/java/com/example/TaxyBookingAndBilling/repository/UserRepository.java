@@ -1,14 +1,13 @@
 package com.example.TaxyBookingAndBilling.repository;
 
-import com.example.TaxyBookingAndBilling.model.UserModel;
+import com.example.TaxyBookingAndBilling.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<UserModel,Long> {
-//boolean existsByEmail(String email);
-Optional<UserModel> findByEmail(String email);
+public interface UserRepository extends JpaRepository<User,Long> {
+    Optional<User> findByEmail(String email);
 
 }

@@ -28,5 +28,8 @@ public class Taxi {
 
     public Taxi(long l, String name, String kl07007, String location) {
     }
+
+    public Taxi(Long taxiId) {
+    }
 }
 

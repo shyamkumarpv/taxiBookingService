@@ -27,7 +27,7 @@ public class Booking {
     private Long id;
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "userId",referencedColumnName = "id",unique=false)
-    private UserModel userId;
+    private User userId;
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "taxiId",referencedColumnName = "id",unique=false)
     private Taxi taxiId;

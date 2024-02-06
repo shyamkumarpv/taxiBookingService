@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 public class TaxiResponse {
     private Long Id;
     private String driverName;
-    private Long licenseNumber;
+    private String licenseNumber;
 
 }

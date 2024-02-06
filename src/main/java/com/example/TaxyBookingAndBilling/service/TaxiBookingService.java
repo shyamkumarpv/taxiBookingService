@@ -6,11 +6,13 @@ import com.example.TaxyBookingAndBilling.contract.Response.BookingCompletedRespo
 import com.example.TaxyBookingAndBilling.contract.Response.TaxiBookingResponse;
 import com.example.TaxyBookingAndBilling.model.Booking;
 import com.example.TaxyBookingAndBilling.model.Taxi;
-import com.example.TaxyBookingAndBilling.model.UserModel;
+import com.example.TaxyBookingAndBilling.model.User;
 import com.example.TaxyBookingAndBilling.repository.BookingRepository;
 import com.example.TaxyBookingAndBilling.repository.TaxiRepository;
 import com.example.TaxyBookingAndBilling.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -27,9 +29,10 @@ public class TaxiBookingService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
 
+
     public boolean taxiBooking(TaxiBookingRequest request) {
         List<Taxi> taxies = taxiRepository.findByCurrentLocationAndIsAvailable(request.getPickupLocation(), true);
-        Optional<UserModel> user = userRepository.findById(request.getUser());
+        Optional<User> user = userRepository.findById(request.getUser());
 
         if (!taxies.isEmpty() && user.isPresent()) {
             Booking booking = Booking.builder()
@@ -85,25 +88,25 @@ public class TaxiBookingService {
                 .orElseThrow(
                         () -> new EntityNotFoundException("Taxi not found "));
 
-        UserModel userModel = userRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(
                         () -> new EntityNotFoundException("User not found "));
         if (balance < fare) {
-            throw new RuntimeException("Insufficient balance to book, please recharge");
+            throw new RuntimeException("Insufficient balance to book this ride, please recharge");
         } else {
             booking.setDistance(request.getDistance());
             booking.setFare(fare);
             bookingRepository.save(booking);
             taxi.setAvailable(true);
             taxiRepository.save(taxi);
-            userModel.setAccountBalance(balance-fare);
-            userRepository.save(userModel);
+            user.setAccountBalance(balance-fare);
+            userRepository.save(user);
 
             BookingCompletedResponse response =new BookingCompletedResponse();
             response.setId(booking.getId());
             response.setFare(fare);
             response.setDistance(request.getDistance());
-            System.out.println(response.getFare());
+
 
             return response;
 

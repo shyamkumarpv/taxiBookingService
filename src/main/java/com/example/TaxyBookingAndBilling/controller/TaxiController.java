@@ -1,6 +1,7 @@
 package com.example.TaxyBookingAndBilling.controller;
 
 import com.example.TaxyBookingAndBilling.contract.Request.TaxiRequest;
+import com.example.TaxyBookingAndBilling.contract.Response.TaxiResponse;
 import com.example.TaxyBookingAndBilling.service.TaxiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,7 +16,7 @@ public class TaxiController {
     private final TaxiService taxiService;
 
     @PostMapping("/create")
-    public long availableTaxi(@RequestBody TaxiRequest request){
+    public TaxiResponse availableTaxi(@RequestBody TaxiRequest request){
         return taxiService.createTaxi(request);
     }
 }
