@@ -1,4 +1,4 @@
-package com.example.TaxyBookingAndBilling.contract.Response;
+package com.example.TaxyBookingAndBilling.contract.response;
 
 import lombok.Builder;
 import lombok.Getter;

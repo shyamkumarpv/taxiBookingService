@@ -1,5 +1,6 @@
 package com.example.TaxyBookingAndBilling.model;
 
+import com.example.TaxyBookingAndBilling.constant.Status;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -13,6 +14,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -33,10 +35,9 @@ public class Booking {
     private Taxi taxiId;
     private String pickupLocation;
     private String dropoffLocation;
-    private Long fare;
-    private Date bookingTime;
-    private String status;
+    private double fare;
+    private LocalDateTime bookingTime;
+    private Status status;
     private Long distance;
 
 }
-

@@ -30,7 +30,7 @@ public class User implements UserDetails {
     private String name;
     private String email;
     private String password;
-    private Long accountBalance;
+    private Double accountBalance;
 
     public User(Long userId, Long balance) {
     }

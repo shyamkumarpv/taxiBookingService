@@ -1,4 +1,4 @@
-package com.example.TaxyBookingAndBilling.contract.Response;
+package com.example.TaxyBookingAndBilling.contract.response;
 
 import com.example.TaxyBookingAndBilling.model.Taxi;
 import lombok.AllArgsConstructor;
@@ -20,8 +20,6 @@ public class TaxiBookingResponse {
     private String dropoffLocation;
     private Date bookingTime;
     private String status;
-    private Long fare;
+    private double fare;
 
-    public TaxiBookingResponse(String s) {
-    }
 }

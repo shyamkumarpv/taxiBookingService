@@ -1,4 +1,4 @@
-package com.example.TaxyBookingAndBilling.contract.Request;
+package com.example.TaxyBookingAndBilling.contract.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -14,7 +14,7 @@ public class TaxiRequest {
     @NotBlank
     private String driverName;
     @NotBlank
-    private String licenseNumber;
+    private String licenceNumber;
     @NotBlank
     private String currentLocation;
 }

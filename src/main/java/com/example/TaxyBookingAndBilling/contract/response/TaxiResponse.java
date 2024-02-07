@@ -1,4 +1,4 @@
-package com.example.TaxyBookingAndBilling.contract.Response;
+package com.example.TaxyBookingAndBilling.contract.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class TaxiResponse {
     private Long Id;
     private String driverName;
-    private String licenseNumber;
+    private String licenceNumber;
+
 
 }

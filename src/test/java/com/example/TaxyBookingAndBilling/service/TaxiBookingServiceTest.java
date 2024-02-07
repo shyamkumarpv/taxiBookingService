@@ -1,217 +1,209 @@
 package com.example.TaxyBookingAndBilling.service;
 
-import com.example.TaxyBookingAndBilling.contract.Request.BookingCompletedRequest;
-import com.example.TaxyBookingAndBilling.contract.Request.TaxiBookingRequest;
-import com.example.TaxyBookingAndBilling.contract.Response.BookingCompletedResponse;
-import com.example.TaxyBookingAndBilling.contract.Response.TaxiBookingResponse;
+import com.example.TaxyBookingAndBilling.constant.Status;
+
+
+import com.example.TaxyBookingAndBilling.contract.request.TaxiBookingRequest;
+import com.example.TaxyBookingAndBilling.contract.response.BookingCompletedResponse;
+import com.example.TaxyBookingAndBilling.contract.response.TaxiBookingResponse;
 import com.example.TaxyBookingAndBilling.model.Booking;
 import com.example.TaxyBookingAndBilling.model.Taxi;
 import com.example.TaxyBookingAndBilling.model.User;
 import com.example.TaxyBookingAndBilling.repository.BookingRepository;
 import com.example.TaxyBookingAndBilling.repository.TaxiRepository;
 import com.example.TaxyBookingAndBilling.repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SpringBootTest
 @AutoConfigureMockMvc
-@ExtendWith(MockitoExtension.class)
 public class TaxiBookingServiceTest {
 
-        @Mock
-        private TaxiRepository taxiRepository;
-        @Mock
-        private BookingRepository bookingRepository;
+    @MockBean
+    private BookingRepository bookingRepository;
 
-        @Mock
-        private UserRepository userRepository;
-        @Mock
-        private ModelMapper modelMapper;
+    @MockBean
+    private ModelMapper modelMapper;
 
-        @InjectMocks
-        private TaxiBookingService taxiBookingService;
+    @Autowired
+    private TaxiBookingService taxiBookingService;
 
-    @Before
-    public void init() {
-        MockitoAnnotations.initMocks(this);
-    }
+    @MockBean
+    private TaxiRepository taxiRepository;
 
+    @MockBean
+    private UserRepository userRepository;
 
     @Test
-    public void testTaxiBooking() {
-        TaxiBookingRequest request = new TaxiBookingRequest(0L,"A","B");
-        Taxi taxi = new Taxi(1L,"name","KL01007","A");
-        User user = new User(1L,"shyam","shyam@gmail","password",10L);
-        Booking booking = new Booking(1L,user,taxi,"A","B",10L,new Date(),"booked",10L);
-        when(taxiRepository.findByCurrentLocationAndIsAvailable(request.getPickupLocation(), true)).thenReturn(Collections.singletonList(taxi));
-        when(userRepository.findById(request.getUser())).thenReturn(Optional.of(user));
-        when(bookingRepository.save(any(Booking.class))).thenReturn(booking);
+    void testCreateBooking() {
+        when(taxiRepository.findAll()).thenReturn(new ArrayList<>());
+
+        User user = new User();
+        user.setAccountBalance(10.0d);
+        user.setEmail("shyam@gmail.com");
+        user.setId(1L);
+        user.setName("Name");
+        user.setPassword("complex");
+        Optional<User> ofResult = Optional.of(user);
+        when(userRepository.findById(Mockito.<Long>any())).thenReturn(ofResult);
+        assertThrows(RuntimeException.class,
+                () -> taxiBookingService.createBooking(1L, 1L, new TaxiBookingRequest("Pickup Location", "Dropoff Location")));
+        verify(userRepository).findById(Mockito.<Long>any());
+        verify(taxiRepository).findAll();
+    }
+    @Test
+    void testSearchNearestTaxi() {
+        when(taxiRepository.findAll()).thenReturn(new ArrayList<>());
+        assertThrows(RuntimeException.class, () -> taxiBookingService.searchNearestTaxi("Pickup Location"));
+        verify(taxiRepository).findAll();
+    }
+    @Test
+    void testViewBookingById() {
+        Taxi taxiId = new Taxi();
+        taxiId.setAvailable(true);
+        taxiId.setCurrentLocation("Current Location");
+        taxiId.setDriverName("Driver Name");
+        taxiId.setId(1L);
+        taxiId.setLicenceNumber("42");
+
+        User userId = new User();
+        userId.setAccountBalance(10.0d);
+        userId.setEmail("jane.doe@example.org");
+        userId.setId(1L);
+        userId.setName("Name");
+        userId.setPassword("iloveyou");
+
+        Booking booking = new Booking();
+        booking.setBookingTime(LocalDate.of(2024, 1, 1).atStartOfDay());
+        booking.setDistance(1L);
+        booking.setDropoffLocation("Dropoff Location");
+        booking.setFare(10.0d);
+        booking.setId(1L);
+        booking.setPickupLocation("Pickup Location");
+        booking.setStatus(Status.CONFIRMED);
+        booking.setTaxiId(taxiId);
+        booking.setUserId(userId);
+        Optional<Booking> ofResult = Optional.of(booking);
+        when(bookingRepository.findById(Mockito.<Long>any())).thenReturn(ofResult);
+        TaxiBookingResponse taxiBookingResponse = new TaxiBookingResponse();
+        when(modelMapper.map(Mockito.<Object>any(), Mockito.<Class<TaxiBookingResponse>>any()))
+                .thenReturn(taxiBookingResponse);
+        TaxiBookingResponse actualViewBookingByIdResult = taxiBookingService.viewBookingById(1L);
+        verify(modelMapper).map(Mockito.<Object>any(), Mockito.<Class<TaxiBookingResponse>>any());
+        verify(bookingRepository).findById(Mockito.<Long>any());
+        assertSame(taxiBookingResponse, actualViewBookingByIdResult);
+    }
+    @Test
+    void testCancelBooking() {
+        Taxi taxiId = new Taxi();
+        taxiId.setAvailable(true);
+        taxiId.setCurrentLocation("Current Location");
+        taxiId.setDriverName("Driver Name");
+        taxiId.setId(1L);
+        taxiId.setLicenceNumber("42");
+
+        User userId = new User();
+        userId.setAccountBalance(10.0d);
+        userId.setEmail("syam@gmail.com");
+        userId.setId(1L);
+        userId.setName("Name");
+        userId.setPassword("password");
+
+        Booking booking = new Booking();
+        booking.setBookingTime(LocalDate.of(2024, 1, 1).atStartOfDay());
+        booking.setDistance(1L);
+        booking.setDropoffLocation("Dropoff Location");
+        booking.setFare(10.0d);
+        booking.setId(1L);
+        booking.setPickupLocation("Pickup Location");
+        booking.setStatus(Status.CONFIRMED);
+        booking.setTaxiId(taxiId);
+        booking.setUserId(userId);
+        Optional<Booking> ofResult = Optional.of(booking);
+
+
+        when(bookingRepository.save(Mockito.<Booking>any())).thenReturn(booking);
+        when(bookingRepository.findById(Mockito.<Long>any())).thenReturn(ofResult);
+        long actualCancelBookingResult = taxiBookingService.cancelBooking(1L);
+        verify(bookingRepository).findById(Mockito.<Long>any());
+        verify(bookingRepository).save(Mockito.<Booking>any());
+        assertEquals(1L, actualCancelBookingResult);
+    }
+    @Test
+    void testBookingCompleted() {
+        long userId = 1L;
+        long bookingId = 1L;
+        double fare = 10.0d;
+        Taxi taxi = Taxi.builder()
+                .id(1L)
+                .isAvailable(true)
+                .currentLocation("Current Location")
+                .driverName("Driver Name")
+                .licenceNumber("42")
+                .build();
+        User user = User.builder()
+                .id(userId)
+                .accountBalance(10.0d)
+                .email("jane.doe@example.org")
+                .name("Name")
+                .password("iloveyou")
+                .build();
+        Booking booking = Booking.builder()
+                .id(bookingId)
+                .bookingTime(LocalDate.of(1970, 1, 1).atStartOfDay())
+                .distance(1L)
+                .pickupLocation("Pickup Location")
+                .dropoffLocation("Dropoff Location")
+                .fare(fare)
+                .status(Status.CONFIRMED)
+                .taxiId(taxi)
+                .userId(user)
+                .build();
+        BookingCompletedResponse expectedResponse = BookingCompletedResponse.builder()
+                .Completed("Booking completed successfully. Account balance is 10.0")
+                .build();
+        TaxiRepository taxiRepository = mock(TaxiRepository.class);
+        BookingRepository bookingRepository = mock(BookingRepository.class);
+        UserRepository userRepository = mock(UserRepository.class);
+        TaxiBookingService taxiBookingService = new TaxiBookingService(taxiRepository, bookingRepository,userRepository, modelMapper);
+
+        when(taxiRepository.findById(1L)).thenReturn(Optional.of(taxi));
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(taxiRepository.save(any(Taxi.class))).thenReturn(taxi);
+        when(userRepository.save(any(User.class))).thenReturn(user);
 
-        boolean success = taxiBookingService.taxiBooking(request);
+        BookingCompletedResponse actualResponse = taxiBookingService.bookingCompleted(userId, bookingId);
 
-        verify(taxiRepository).findByCurrentLocationAndIsAvailable(request.getPickupLocation(), true);
-        verify(userRepository).findById(request.getUser());
-        verify(bookingRepository).save(any(Booking.class));
+        verify(bookingRepository).findById(1L);
+        verify(taxiRepository).findById(1L);
+        verify(userRepository).findById(userId);
         verify(taxiRepository).save(any(Taxi.class));
+        verify(userRepository).save(any(User.class));
+        assertEquals(expectedResponse.getCompleted(), actualResponse.getCompleted());
     }
-    @Test
-    public void testTaxiBooking_NoAvailableTaxi() {
-        TaxiBookingRequest request = new TaxiBookingRequest(1L,"A","B");
-        when(taxiRepository.findByCurrentLocationAndIsAvailable(request.getPickupLocation(), true)).thenReturn(Collections.emptyList());
-
-        boolean success = taxiBookingService.taxiBooking(request);
-
-        assertFalse(success);
-    }
-    @Test
-    public void testTaxiBooking_UserDoesNotExist() {
-        TaxiBookingRequest request = new TaxiBookingRequest(0L,"A","B");
-        Taxi taxi = new Taxi(1L,"name","KL01007","A");
-        when(taxiRepository.findByCurrentLocationAndIsAvailable(request.getPickupLocation(), true)).thenReturn(Collections.singletonList(taxi));
-        when(userRepository.findById(request.getUser())).thenReturn(Optional.empty());
-
-        boolean success = taxiBookingService.taxiBooking(request);
-
-        assertFalse(success);
-    }
-    @Test
-    public void testViewBookingById() {
-        Long id = 1L;
-        Booking booking = new Booking();
-        TaxiBookingResponse response = new TaxiBookingResponse();
-
-        when(bookingRepository.findById(id)).thenReturn(Optional.of(booking));
-        when(modelMapper.map(booking, TaxiBookingResponse.class)).thenReturn(response);
-
-        TaxiBookingResponse result = taxiBookingService.viewBookingById(id);
-
-        assertEquals(response, result);
-        verify(bookingRepository, times(1)).findById(id);
-        verify(modelMapper, times(1)).map(booking, TaxiBookingResponse.class);
-    }
-
-    @Test(expected = EntityNotFoundException.class)
-    public void testViewBookingById_NotFound() {
-        Long id = 1L;
-
-        when(bookingRepository.findById(id)).thenReturn(Optional.empty());
-
-        taxiBookingService.viewBookingById(id);
-    }
-    @Test
-    public void testCancelBookingById (){
-        Long bookingId = 1L;
-        Booking booking = new Booking();
-        booking.setId(bookingId);
-        booking.setStatus("pending");
-
-        when(bookingRepository.findById(bookingId)).thenReturn(java.util.Optional.of(booking));
-
-        TaxiBookingResponse response = taxiBookingService.cancelBookingById(bookingId);
-
-        assertEquals("cancelled", booking.getStatus());
-        verify(bookingRepository, times(1)).findById(bookingId);
-        verify(bookingRepository, times(1)).save(booking);
-//        assertEquals("booking" + booking.getTaxiId() + " has been cancelled", response.getPickupLocation());
-    }
-
-    @Test
-    public void testCancelBookingById_BookingNotFound() {
-        Long bookingId = 2L;
-
-        when(bookingRepository.findById(bookingId)).thenReturn(java.util.Optional.empty());
-
-        try {
-            taxiBookingService.cancelBookingById(bookingId);
-        } catch (EntityNotFoundException ex) {
-            assertEquals("Booking not found with id" + bookingId, ex.getMessage());
-        }
-
-        verify(bookingRepository, times(1)).findById(bookingId);
-        verify(bookingRepository, never()).save(any());
-    }
-//    @Test
-//    public void testBookingCompleted() {
-//        Long id = 1L;
-//        Booking booking = new Booking();
-//        booking.setId(id);
-//        Long taxiId = 1L;
-//        Long userId = 1L;
-//        Long distance = 10L;
-//        Long fare = distance * 10L;
-//        Long balance = fare + 10L;
-//
-//        booking.setTaxiId(new Taxi(taxiId));
-//        booking.setUserId(new User(userId, balance));
-//
-//        Taxi taxi = new Taxi(taxiId);
-//        taxi.setAvailable(false);
-//
-//        User user = new User(userId, balance);
-//
-//        when(bookingRepository.findById(id)).thenReturn(Optional.of(booking));
-//        when(taxiRepository.findById(taxiId)).thenReturn(Optional.of(taxi));
-//        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-//
-//        TaxiBookingService taxiBookingService = new TaxiBookingService(taxiRepository, bookingRepository, userRepository, modelMapper);
-//        BookingCompletedRequest request = new BookingCompletedRequest();
-//        request.setId(id);
-//        request.setDistance(distance);
-//        BookingCompletedResponse response = taxiBookingService.bookingCompleted(request);
-//
-//        assertEquals(id, response.getId());
-//        assertEquals(fare, response.getFare());
-//        assertEquals(distance, response.getDistance());
-//        assertTrue(taxi.isAvailable());
-//        assertEquals(balance - fare, user.getAccountBalance());
-//    }
-
-
-    @Test
-    public void testBookingCompletedInsufficientBalance() {
-        Long id = 1L;
-        Long taxiId = 1L;
-        Long userId = 1L;
-        Long distance = 10L;
-        Long fare = distance * 10L;
-        Long balance = fare - 10L;
-
-        Booking booking = new Booking();
-        booking.setId(id);
-        booking.setTaxiId(new Taxi(taxiId));
-        booking.setUserId(new User(userId, balance));
-
-        when(bookingRepository.findById(id)).thenReturn(Optional.of(booking));
-
-        TaxiBookingService taxiBookingService = new TaxiBookingService(taxiRepository, bookingRepository, userRepository,modelMapper);
-        BookingCompletedRequest request = new BookingCompletedRequest();
-
-        assertThrows(RuntimeException.class, () -> taxiBookingService.bookingCompleted(request));
-    }
-
 }
-

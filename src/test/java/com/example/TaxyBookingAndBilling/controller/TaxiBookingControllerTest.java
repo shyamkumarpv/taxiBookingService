@@ -1,74 +1,80 @@
 package com.example.TaxyBookingAndBilling.controller;
 
-import com.example.TaxyBookingAndBilling.contract.Request.BookingCompletedRequest;
 import com.example.TaxyBookingAndBilling.contract.Request.TaxiBookingRequest;
-import com.example.TaxyBookingAndBilling.contract.Response.BookingCompletedResponse;
-import com.example.TaxyBookingAndBilling.contract.Response.TaxiBookingResponse;
+import com.example.TaxyBookingAndBilling.contract.response.BookingCompletedResponse;
+import com.example.TaxyBookingAndBilling.contract.response.TaxiBookingResponse;
+import com.example.TaxyBookingAndBilling.model.Taxi;
 import com.example.TaxyBookingAndBilling.service.TaxiBookingService;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static junit.framework.TestCase.assertEquals;
-import static org.mockito.Mockito.times;
+import java.util.Date;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 public class TaxiBookingControllerTest {
-    @Autowired
-    private MockMvc mockMvc;
-    @InjectMocks
-    private TaxiBookingController taxiBookingController;
-    @Mock
-    private TaxiBookingService taxiBookingService;
+    TaxiBookingService taxiBookingService = mock(TaxiBookingService.class);
 
-    @Before
-    public void init() {
-        MockitoAnnotations.initMocks(this);
+    @Test
+    void testTaxiBooking() {
+        TaxiBookingController taxiBookingController = new TaxiBookingController(taxiBookingService);
+
+        long userId = 123;
+        long distance = 10;
+        TaxiBookingRequest request = new TaxiBookingRequest("cnn","pnr");
+        TaxiBookingResponse expectedResponse = new TaxiBookingResponse(new Taxi(),"cnn","pnr", new Date(),"BOOKED",123D);
+        when(taxiBookingService.createBooking(userId, distance, request)).thenReturn(expectedResponse);
+        TaxiBookingResponse actualResponse = taxiBookingController.taxiBooking(userId, distance, request);
+        verify(taxiBookingService).createBooking(userId, distance, request);
+        assertEquals(expectedResponse, actualResponse);
     }
     @Test
-    public void testTaxiBooking() throws Exception{
-        TaxiBookingRequest request = new TaxiBookingRequest();
-        when(taxiBookingService.taxiBooking(request)).thenReturn(true);
-        boolean result = taxiBookingController.taxiBooking(request);
-        verify(taxiBookingService,times(1)).taxiBooking(request);
+    void testViewBookingById() {
+        TaxiBookingController taxiBookingController = new TaxiBookingController(taxiBookingService);
+
+        long bookingId = 123;
+        TaxiBookingResponse expectedResponse = new TaxiBookingResponse(new Taxi(),"cnn","pnr", new Date(),"BOOKED",12d);
+        when(taxiBookingService.viewBookingById(bookingId)).thenReturn(expectedResponse);
+        TaxiBookingResponse actualResponse = taxiBookingController.viewBookingById(bookingId);
+        verify(taxiBookingService).viewBookingById(bookingId);
+        assertEquals(expectedResponse, actualResponse);
     }
     @Test
-    public void testViewTaxiBookingById() throws Exception{
-        Long id = 12L;
-        TaxiBookingResponse expectedResponse = new TaxiBookingResponse();
-        when(taxiBookingService.viewBookingById(id)).thenReturn(expectedResponse);
-        TaxiBookingResponse actualResponse = taxiBookingController.viewBookingById(id);
-        verify(taxiBookingService,times(1)).viewBookingById(id);
-        assertEquals(expectedResponse,actualResponse);
+    void testCancelBookingById() {
+        TaxiBookingController taxiBookingController = new TaxiBookingController(taxiBookingService);
+        long bookingId = 123;
+        long expectedResponse = 1L;
+        when(taxiBookingService.cancelBooking(bookingId)).thenReturn(expectedResponse);
+        long actualResponse = taxiBookingController.cancelBookingById(bookingId);
+        verify(taxiBookingService).cancelBooking(bookingId);
+        assertEquals(expectedResponse, actualResponse);
     }
     @Test
-    public void testCancelBookingById()throws Exception {
-        Long id = 1L;
-        TaxiBookingResponse expectedResponse = new TaxiBookingResponse();
-        when(taxiBookingService.cancelBookingById(id)).thenReturn(expectedResponse);
-        TaxiBookingResponse actualResponse = taxiBookingController.cancelBookingById(id);
-        verify(taxiBookingService, times(1)).cancelBookingById(id);
-        assertEquals(expectedResponse,actualResponse);
+    void testBookingCompleted() throws Exception {
+        TaxiBookingController taxiBookingController = new TaxiBookingController(taxiBookingService);
+
+        long userId = 1L;
+        long bookingId = 1L;
+        BookingCompletedResponse expectedResponse = BookingCompletedResponse.builder().Completed("Completed").build();
+
+        when(taxiBookingService.bookingCompleted(userId, bookingId)).thenReturn(expectedResponse);
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(taxiBookingController).build();
+        mockMvc.perform(MockMvcRequestBuilders.post("/booking/completed/{userId}", userId)
+                        .param("bookingId", String.valueOf(bookingId))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
+                .andExpect(MockMvcResultMatchers.content().json("{\"completed\":\"Completed\"}"));
     }
-    @Test
-    public void testBookingCompleted() throws Exception{
-        BookingCompletedRequest request = new BookingCompletedRequest();
-        BookingCompletedResponse expectedResponse = new BookingCompletedResponse();
-        when(taxiBookingService.bookingCompleted(request)).thenReturn(expectedResponse);
-        BookingCompletedResponse actualResponse = taxiBookingController.bookingCompleted(request);
-        verify(taxiBookingService, times(1)).bookingCompleted(request);
-        assertEquals(expectedResponse,actualResponse);
-
-
-    }
-
 }

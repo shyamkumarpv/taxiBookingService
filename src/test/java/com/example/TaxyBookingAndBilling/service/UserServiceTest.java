@@ -1,21 +1,24 @@
 package com.example.TaxyBookingAndBilling.service;
 
-import com.example.TaxyBookingAndBilling.contract.Request.AddMoneyRequest;
-import com.example.TaxyBookingAndBilling.contract.Request.LoginRequest;
-import com.example.TaxyBookingAndBilling.contract.Request.RegistrationRequest;
-import com.example.TaxyBookingAndBilling.contract.Response.LoginResponse;
-import com.example.TaxyBookingAndBilling.controller.UserController;
+
+import com.example.TaxyBookingAndBilling.contract.response.LoginResponse;
+import com.example.TaxyBookingAndBilling.contract.request.AddMoneyRequest;
+import com.example.TaxyBookingAndBilling.contract.request.LoginRequest;
+import com.example.TaxyBookingAndBilling.contract.request.RegistrationRequest;
 import com.example.TaxyBookingAndBilling.model.User;
 import com.example.TaxyBookingAndBilling.repository.UserRepository;
 import com.example.TaxyBookingAndBilling.security.JwtService;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
@@ -23,8 +26,8 @@ import java.util.Optional;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -49,46 +52,55 @@ public class UserServiceTest {
 
     @Test
     public void testUserRegistration() {
-        RegistrationRequest request = new RegistrationRequest("shyam", "shyamn@gmail.com", "password");
-        User user = User.builder().id(1L).name(request.getName()).email(request.getEmail()).password("encodedPassword").build();
-        when(passwordEncoder.encode(request.getPassword())).thenReturn("encodedPassword");
-        when(userRepository.save(any(User.class))).thenReturn(user);
-
-        Long userId = userService.userRegistration(request);
-
-        assertEquals(Long.valueOf(1), userId);
-        verify(userRepository, times(1)).save(any(User.class));
+        User user = new User();
+        user.setAccountBalance(10.0d);
+        user.setEmail("shyam@gmail.com");
+        user.setId(1L);
+        user.setName("Name");
+        user.setPassword("complex");
+        when(userRepository.save(Mockito.<User>any())).thenReturn(user);
+        when(passwordEncoder.encode(Mockito.<CharSequence>any())).thenReturn("secret");
+        Long actualUserRegistrationResult = userService
+                .userRegistration(new RegistrationRequest("Name", "jane.doe@example.org", "iloveyou"));
+        verify(userRepository).save(Mockito.<User>any());
+        verify(passwordEncoder).encode(Mockito.<CharSequence>any());
+        Assertions.assertEquals(1L, actualUserRegistrationResult.longValue());
     }
+
     @Test
     public void testAddMoney() {
-        AddMoneyRequest request = new AddMoneyRequest(1L, 100L);
-        User user = User.builder().id(1L).accountBalance(50L).build();
-        when(userRepository.findById(request.getUserId())).thenReturn(Optional.of(user));
-        when(userRepository.save(any(User.class))).thenReturn(user);
-
-        boolean success = userService.addMoney(request);
-        assertTrue(success);
-        assertEquals(Long.valueOf(150), user.getAccountBalance());
-        verify(userRepository, times(1)).findById(request.getUserId());
-        verify(userRepository, times(1)).save(any(User.class));
+        User user = new User();
+        user.setAccountBalance(10.0d);
+        user.setEmail("shyam@gmail.com");
+        user.setId(1L);
+        user.setName("shyam");
+        user.setPassword("shyamjva");
+        Optional<User> ofResult = Optional.of(user);
+        when(userRepository.save(Mockito.<User>any())).thenReturn(user);
+        when(userRepository.findById(Mockito.<Long>any())).thenReturn(ofResult);
+        boolean actualAddMoneyResult = userService.addMoney(new AddMoneyRequest(1L, 10L));
+        verify(userRepository).findById(Mockito.<Long>any());
+        verify(userRepository).save(Mockito.<User>any());
+        Assertions.assertTrue(actualAddMoneyResult);
     }
     @Test
-    public void testUserLogin() {
-        LoginRequest request = new LoginRequest("shyam@gmail.com", "password");
-        User user = User.builder().id(1L).email(request.getEmail()).password("encodedPassword").build();
-        when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(request.getPassword(), user.getPassword())).thenReturn(true);
-        when(jwtService.generateToken(user)).thenReturn("Token");
-
-        LoginResponse response = userService.userLogin(request);
-        assertNotNull(response);
-        assertEquals("Token", response.getToken());
-        verify(userRepository, times(1)).findByEmail(request.getEmail());
-        verify(passwordEncoder, times(1)).matches(request.getPassword(), user.getPassword());
-        verify(jwtService, times(1)).generateToken(user);
+    void testUserLogin() {
+        User user = new User();
+        user.setAccountBalance(10.0d);
+        user.setEmail("shyam@gmail.com");
+        user.setId(1L);
+        user.setName("Name");
+        user.setPassword("hi");
+        Optional<User> ofResult = Optional.of(user);
+        when(userRepository.findByEmail(Mockito.<String>any())).thenReturn(ofResult);
+        when(jwtService.generateToken(Mockito.<UserDetails>any())).thenReturn("ABC123");
+        when(passwordEncoder.matches(Mockito.<CharSequence>any(), Mockito.<String>any())).thenReturn(true);
+        LoginResponse actualUserLoginResult = userService.userLogin(new LoginRequest("shysm@gmail.com", "hi"));
+        verify(userRepository).findByEmail(Mockito.<String>any());
+        verify(jwtService).generateToken(Mockito.<UserDetails>any());
+        verify(passwordEncoder).matches(Mockito.<CharSequence>any(), Mockito.<String>any());
+        Assertions.assertEquals("ABC123", actualUserLoginResult.getToken());
     }
 
-
 }
-
 

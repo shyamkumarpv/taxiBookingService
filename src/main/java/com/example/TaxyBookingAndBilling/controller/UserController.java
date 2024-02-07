@@ -1,9 +1,10 @@
 package com.example.TaxyBookingAndBilling.controller;
 
-import com.example.TaxyBookingAndBilling.contract.Request.AddMoneyRequest;
-import com.example.TaxyBookingAndBilling.contract.Request.LoginRequest;
-import com.example.TaxyBookingAndBilling.contract.Request.RegistrationRequest;
-import com.example.TaxyBookingAndBilling.contract.Response.LoginResponse;
+
+import com.example.TaxyBookingAndBilling.contract.response.LoginResponse;
+import com.example.TaxyBookingAndBilling.contract.request.AddMoneyRequest;
+import com.example.TaxyBookingAndBilling.contract.request.LoginRequest;
+import com.example.TaxyBookingAndBilling.contract.request.RegistrationRequest;
 import com.example.TaxyBookingAndBilling.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -1,7 +1,7 @@
 package com.example.TaxyBookingAndBilling.controller;
 
-import com.example.TaxyBookingAndBilling.contract.Request.TaxiRequest;
-import com.example.TaxyBookingAndBilling.contract.Response.TaxiResponse;
+import com.example.TaxyBookingAndBilling.contract.response.TaxiResponse;
+import com.example.TaxyBookingAndBilling.contract.request.TaxiRequest;
 import com.example.TaxyBookingAndBilling.service.TaxiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;

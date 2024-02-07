@@ -1,68 +1,67 @@
 package com.example.TaxyBookingAndBilling.controller;
 
-import com.example.TaxyBookingAndBilling.contract.Request.AddMoneyRequest;
-import com.example.TaxyBookingAndBilling.contract.Request.LoginRequest;
-import com.example.TaxyBookingAndBilling.contract.Request.RegistrationRequest;
-import com.example.TaxyBookingAndBilling.contract.Response.LoginResponse;
-import com.example.TaxyBookingAndBilling.model.User;
+
+import com.example.TaxyBookingAndBilling.contract.response.LoginResponse;
+import com.example.TaxyBookingAndBilling.contract.request.AddMoneyRequest;
+import com.example.TaxyBookingAndBilling.contract.request.LoginRequest;
+import com.example.TaxyBookingAndBilling.contract.request.RegistrationRequest;
 import com.example.TaxyBookingAndBilling.repository.UserRepository;
 import com.example.TaxyBookingAndBilling.service.UserService;
-import org.junit.Before;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 public class UserControllerTest {
-
-    @InjectMocks private UserController userController;
-    @Mock private UserService userService;
-    @Mock private UserRepository userRepository;
-    @Before
-    public void init() {
-        MockitoAnnotations.initMocks(this);
-    }
+    @Mock
+    UserRepository userRepository;
+    @InjectMocks
+    UserService userService;
 
 
     @Test
-    public void testUserRegistration() throws Exception {
-        RegistrationRequest request = new RegistrationRequest("name","name@gmail","name");
-        long expectedUserId = 12345L;
-        when(userService.userRegistration(request)).thenReturn(expectedUserId);
-        long actualUserId = userController.userRegistration(request);
+    void testUserRegistration() throws Exception {
+        UserService userService = mock(UserService.class);
+        UserController userController = new UserController(userService);
 
+        RegistrationRequest registrationRequest = new RegistrationRequest("shyam","shyam@gmail.com","shyam");
+        Long expectedUserId = 123L;
+        when(userService.userRegistration(registrationRequest)).thenReturn(expectedUserId);
+        Long actualUserId = userController.userRegistration(registrationRequest);
+        verify(userService).userRegistration(registrationRequest);
         assertEquals(expectedUserId, actualUserId);
-        verify(userService, times(1)).userRegistration(request);
     }
 
     @Test
-    public void testUserLogin() throws Exception {
-        LoginRequest request = new LoginRequest("name","password");
-        LoginResponse expectedResponse = new LoginResponse();
-        when(userService.userLogin(request)).thenReturn(expectedResponse);
+    void testUserLogin() throws Exception{
+        UserService userService = mock(UserService.class);
+        UserController userController = new UserController(userService);
 
-        LoginResponse actualResponse = userController.userLogin(request);
-
+        LoginRequest loginRequest = new LoginRequest("shyam@gmail.com","shyam");
+        LoginResponse expectedResponse = new LoginResponse("SFKJJBWDFBKB");
+        when(userService.userLogin(loginRequest)).thenReturn(expectedResponse);
+        LoginResponse actualResponse = userController.userLogin(loginRequest);
+        verify(userService).userLogin(loginRequest);
         assertEquals(expectedResponse, actualResponse);
-        verify(userService, times(1)).userLogin(request);
     }
 
     @Test
-    void testAddMoney()throws Exception{
-        AddMoneyRequest request = new AddMoneyRequest();
-        when(userService.addMoney(request)).thenReturn(true);
-        boolean result = userController.addMoney(request);
-        verify(userService,times(1)).addMoney(request);
+    void testAddMoney() throws Exception {
+        UserService userService = mock(UserService.class);
+        UserController userController = new UserController(userService);
+        AddMoneyRequest addMoneyRequest = new AddMoneyRequest(1L,12L);
+        boolean expectedResponse = true;
+        when(userService.addMoney(addMoneyRequest)).thenReturn(expectedResponse);
+        boolean actualResponse = userController.addMoney(addMoneyRequest);
+        verify(userService).addMoney(addMoneyRequest);
+        assertEquals(expectedResponse, actualResponse);
     }
-
 }

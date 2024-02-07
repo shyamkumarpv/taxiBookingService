@@ -1,7 +1,6 @@
-package com.example.TaxyBookingAndBilling.contract.Request;
+package com.example.TaxyBookingAndBilling.contract.request;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 

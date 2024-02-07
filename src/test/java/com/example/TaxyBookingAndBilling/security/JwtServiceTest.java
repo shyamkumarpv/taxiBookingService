@@ -26,17 +26,5 @@ public class JwtServiceTest {
         assertEquals("testUser", jwtService.extractUsername(token));
     }
 
-//    @Test
-//    public void testTokenExpiration() throws InterruptedException {
-//        UserDetails userDetails = User.withUsername("testUser")
-//                .password("password")
-//                .authorities(Collections.emptyList())
-//                .build();
-//
-//        String token = jwtService.generateToken(userDetails);
-//        Thread.sleep(1000 * 60 + 1);
-//
-//        assertFalse(jwtService.isTokenValid(token, userDetails));
-//    }
 }
 

@@ -1,9 +1,10 @@
 package com.example.TaxyBookingAndBilling.service;
 
-import com.example.TaxyBookingAndBilling.contract.Request.AddMoneyRequest;
-import com.example.TaxyBookingAndBilling.contract.Request.LoginRequest;
-import com.example.TaxyBookingAndBilling.contract.Request.RegistrationRequest;
-import com.example.TaxyBookingAndBilling.contract.Response.LoginResponse;
+
+import com.example.TaxyBookingAndBilling.contract.response.LoginResponse;
+import com.example.TaxyBookingAndBilling.contract.request.AddMoneyRequest;
+import com.example.TaxyBookingAndBilling.contract.request.LoginRequest;
+import com.example.TaxyBookingAndBilling.contract.request.RegistrationRequest;
 import com.example.TaxyBookingAndBilling.model.User;
 import com.example.TaxyBookingAndBilling.repository.UserRepository;
 //import com.example.TaxyBookingAndBilling.security.JwtService;
@@ -32,7 +33,7 @@ public class UserService {
         User user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
-                .accountBalance(0L)
+                .accountBalance(0d)
                 .password(passwordEncoder.encode(request.getPassword()))
                 .build();
         return userRepository.save(user).getId();
@@ -40,7 +41,7 @@ public class UserService {
     }
     public boolean addMoney(AddMoneyRequest request) {
         Optional<User> user = userRepository.findById(request.getUserId());
-        Long updatedBalance = user.get().getAccountBalance() + request.getAmount();
+        double updatedBalance = user.get().getAccountBalance() + request.getAmount();
         if (user.isPresent()) {
             User userModel = user.get();
             userModel.setAccountBalance(updatedBalance);
