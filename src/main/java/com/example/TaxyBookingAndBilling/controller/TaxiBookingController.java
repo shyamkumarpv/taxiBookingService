@@ -1,7 +1,7 @@
 
 package com.example.TaxyBookingAndBilling.controller;
 
-import com.example.TaxyBookingAndBilling.contract.Request.TaxiBookingRequest;
+import com.example.TaxyBookingAndBilling.contract.request.TaxiBookingRequest;
 import com.example.TaxyBookingAndBilling.contract.response.BookingCompletedResponse;
 import com.example.TaxyBookingAndBilling.contract.response.TaxiBookingResponse;
 import com.example.TaxyBookingAndBilling.service.TaxiBookingService;
