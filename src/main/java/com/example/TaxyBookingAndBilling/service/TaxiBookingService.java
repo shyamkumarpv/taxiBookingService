@@ -118,7 +118,6 @@ public class TaxiBookingService {
             Booking booking1 = Booking.builder()
                     .taxiId(taxi)
                     .userId(user)
-                    .distance(booking.getDistance())
                     .pickupLocation(booking.getPickupLocation())
                     .dropoffLocation(booking.getDropoffLocation())
                     .bookingTime(LocalDateTime.now())

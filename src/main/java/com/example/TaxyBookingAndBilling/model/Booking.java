@@ -3,6 +3,8 @@ package com.example.TaxyBookingAndBilling.model;
 import com.example.TaxyBookingAndBilling.constant.Status;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -37,7 +39,7 @@ public class Booking {
     private String dropoffLocation;
     private double fare;
     private LocalDateTime bookingTime;
+    @Enumerated(EnumType.STRING)
     private Status status;
-    private Long distance;
 
 }
