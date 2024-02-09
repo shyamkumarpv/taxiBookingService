@@ -5,40 +5,42 @@ import com.example.TaxyBookingAndBilling.contract.response.LoginResponse;
 import com.example.TaxyBookingAndBilling.contract.request.AddMoneyRequest;
 import com.example.TaxyBookingAndBilling.contract.request.LoginRequest;
 import com.example.TaxyBookingAndBilling.contract.request.RegistrationRequest;
+import com.example.TaxyBookingAndBilling.contract.response.RegistrationResponse;
+import com.example.TaxyBookingAndBilling.exception.EntityAlreadyExistsException;
 import com.example.TaxyBookingAndBilling.repository.UserRepository;
 import com.example.TaxyBookingAndBilling.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 public class UserControllerTest {
-    @Mock
-    UserRepository userRepository;
-    @InjectMocks
-    UserService userService;
-
-
-    @Test
-    void testUserRegistration() throws Exception {
-        UserService userService = mock(UserService.class);
-        UserController userController = new UserController(userService);
-
-        RegistrationRequest registrationRequest = new RegistrationRequest("shyam","shyam@gmail.com","shyam");
-        Long expectedUserId = 123L;
-        when(userService.userRegistration(registrationRequest)).thenReturn(expectedUserId);
-        Long actualUserId = userController.userRegistration(registrationRequest);
-        verify(userService).userRegistration(registrationRequest);
-        assertEquals(expectedUserId, actualUserId);
-    }
+    @Autowired
+    private MockMvc mockMvc;
+    @MockBean
+    private UserService userService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     void testUserLogin() throws Exception{
@@ -63,5 +65,20 @@ public class UserControllerTest {
         boolean actualResponse = userController.addMoney(addMoneyRequest);
         verify(userService).addMoney(addMoneyRequest);
         assertEquals(expectedResponse, actualResponse);
+    }
+    @Test
+    void testUserRegistration() throws Exception {
+
+
+        RegistrationRequest signupRequest = new RegistrationRequest("shyam", "shyam@Gmail.com", "shyam");
+        RegistrationResponse expectedResponse = new RegistrationResponse(1L,"shyam", "shyam@Gmail.com", 1000L);
+
+
+        when(userService.userRegistration(any(RegistrationRequest.class))).thenReturn(expectedResponse);
+        mockMvc.perform(
+                        post("/v1/user/registration")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(new ObjectMapper().writeValueAsString(signupRequest)))
+                .andExpect(status().isOk());
     }
 }

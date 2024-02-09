@@ -26,6 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
@@ -62,12 +63,14 @@ public class TaxiBookingServiceTest {
     void testCreateBooking() {
         when(taxiRepository.findAll()).thenReturn(new ArrayList<>());
 
-        User user = new User();
-        user.setAccountBalance(10.0d);
-        user.setEmail("shyam@gmail.com");
-        user.setId(1L);
-        user.setName("Name");
-        user.setPassword("complex");
+        User user = User.builder()
+                .id(1L)
+                .name("june")
+                .password("password")
+                .email("email")
+                .accountBalance(1000.5d)
+                .build();
+
         Optional<User> ofResult = Optional.of(user);
         when(userRepository.findById(Mockito.<Long>any())).thenReturn(ofResult);
         assertThrows(RuntimeException.class,
@@ -83,30 +86,11 @@ public class TaxiBookingServiceTest {
     }
     @Test
     void testViewBookingById() {
-        Taxi taxiId = new Taxi();
-        taxiId.setAvailable(true);
-        taxiId.setCurrentLocation("Current Location");
-        taxiId.setDriverName("Driver Name");
-        taxiId.setId(1L);
-        taxiId.setLicenceNumber("42");
-
-        User userId = new User();
-        userId.setAccountBalance(10.0d);
-        userId.setEmail("jane.doe@example.org");
-        userId.setId(1L);
-        userId.setName("Name");
-        userId.setPassword("iloveyou");
-
-        Booking booking = new Booking();
+        Taxi taxiId = new Taxi(1L,"mon","KL789","placea",true);
+        User userId = new User(1L,"sam","sam@gmail.com","sam",1000d);
+        Booking booking = new Booking(1L,userId,taxiId,"loaction","loactionB",10.d,LocalDateTime.now(),Status.CONFIRMED);
         booking.setBookingTime(LocalDate.of(2024, 1, 1).atStartOfDay());
-        booking.setDistance(1L);
-        booking.setDropoffLocation("Dropoff Location");
-        booking.setFare(10.0d);
-        booking.setId(1L);
-        booking.setPickupLocation("Pickup Location");
-        booking.setStatus(Status.CONFIRMED);
-        booking.setTaxiId(taxiId);
-        booking.setUserId(userId);
+
         Optional<Booking> ofResult = Optional.of(booking);
         when(bookingRepository.findById(Mockito.<Long>any())).thenReturn(ofResult);
         TaxiBookingResponse taxiBookingResponse = new TaxiBookingResponse();
@@ -119,32 +103,31 @@ public class TaxiBookingServiceTest {
     }
     @Test
     void testCancelBooking() {
-        Taxi taxiId = new Taxi();
-        taxiId.setAvailable(true);
-        taxiId.setCurrentLocation("Current Location");
-        taxiId.setDriverName("Driver Name");
-        taxiId.setId(1L);
-        taxiId.setLicenceNumber("42");
+        Taxi taxi = Taxi.builder()
+                .driverName("shyam")
+                .licenceNumber("KL15A1234")
+                .isAvailable(true)
+                .currentLocation("place")
+                .id(1L)
+                .build();
+        User user = User.builder()
+                .id(1L)
+                .accountBalance(1000.5d)
+                .name("sam")
+                .email("sam@gmail.com")
+                .password("password")
+                .build();
+        Booking booking = Booking.builder()
+                .id(1L)
+                .taxiId(taxi)
+                .userId(user)
+                .pickupLocation("aluva")
+                .dropoffLocation("hmt")
+                .bookingTime(LocalDateTime.now())
+                .status(Status.CONFIRMED)
+                .build();
 
-        User userId = new User();
-        userId.setAccountBalance(10.0d);
-        userId.setEmail("syam@gmail.com");
-        userId.setId(1L);
-        userId.setName("Name");
-        userId.setPassword("password");
-
-        Booking booking = new Booking();
-        booking.setBookingTime(LocalDate.of(2024, 1, 1).atStartOfDay());
-        booking.setDistance(1L);
-        booking.setDropoffLocation("Dropoff Location");
-        booking.setFare(10.0d);
-        booking.setId(1L);
-        booking.setPickupLocation("Pickup Location");
-        booking.setStatus(Status.CONFIRMED);
-        booking.setTaxiId(taxiId);
-        booking.setUserId(userId);
         Optional<Booking> ofResult = Optional.of(booking);
-
 
         when(bookingRepository.save(Mockito.<Booking>any())).thenReturn(booking);
         when(bookingRepository.findById(Mockito.<Long>any())).thenReturn(ofResult);
@@ -170,12 +153,11 @@ public class TaxiBookingServiceTest {
                 .accountBalance(10.0d)
                 .email("jane.doe@example.org")
                 .name("Name")
-                .password("iloveyou")
+                .password("password")
                 .build();
         Booking booking = Booking.builder()
                 .id(bookingId)
                 .bookingTime(LocalDate.of(1970, 1, 1).atStartOfDay())
-                .distance(1L)
                 .pickupLocation("Pickup Location")
                 .dropoffLocation("Dropoff Location")
                 .fare(fare)

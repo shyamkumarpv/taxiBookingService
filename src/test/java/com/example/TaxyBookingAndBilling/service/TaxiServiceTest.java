@@ -29,13 +29,7 @@ public class TaxiServiceTest {
 
     @Test
     public void createTaxi() {
-        Taxi taxi = new Taxi();
-        taxi.setAvailable(true);
-        taxi.setCurrentLocation("Current Location");
-        taxi.setDriverName("Driver Name");
-        taxi.setId(1L);
-        taxi.setLicenceNumber("42");
-
+        Taxi taxi = new Taxi(1L,"aluva","KL071234","location",true);
         Taxi savedTaxi = taxiRepository.save(taxi);
 
         TaxiRequest taxiRequest = new TaxiRequest("Driver Name", "42", "Current Location");

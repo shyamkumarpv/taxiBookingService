@@ -7,10 +7,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
-public class TaxyBookingAndBillingApplication {
+public class TaxiBookingAndBillingApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(TaxyBookingAndBillingApplication.class, args);
+		SpringApplication.run(TaxiBookingAndBillingApplication.class, args);
 	}
 	@Bean
 	public ModelMapper modelMapper() {

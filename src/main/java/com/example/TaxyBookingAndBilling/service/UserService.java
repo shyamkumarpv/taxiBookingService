@@ -5,6 +5,7 @@ import com.example.TaxyBookingAndBilling.contract.response.LoginResponse;
 import com.example.TaxyBookingAndBilling.contract.request.AddMoneyRequest;
 import com.example.TaxyBookingAndBilling.contract.request.LoginRequest;
 import com.example.TaxyBookingAndBilling.contract.request.RegistrationRequest;
+import com.example.TaxyBookingAndBilling.contract.response.RegistrationResponse;
 import com.example.TaxyBookingAndBilling.model.User;
 import com.example.TaxyBookingAndBilling.repository.UserRepository;
 //import com.example.TaxyBookingAndBilling.security.JwtService;
@@ -29,14 +30,18 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public Long userRegistration(RegistrationRequest request){
+    public RegistrationResponse userRegistration(RegistrationRequest request){
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Invalid Signup");
+        }
         User user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
                 .accountBalance(0d)
                 .password(passwordEncoder.encode(request.getPassword()))
                 .build();
-        return userRepository.save(user).getId();
+        user = userRepository.save(user);
+        return modelMapper.map(user, RegistrationResponse.class);
 
     }
     public boolean addMoney(AddMoneyRequest request) {

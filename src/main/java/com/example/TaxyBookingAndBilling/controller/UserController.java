@@ -5,6 +5,7 @@ import com.example.TaxyBookingAndBilling.contract.response.LoginResponse;
 import com.example.TaxyBookingAndBilling.contract.request.AddMoneyRequest;
 import com.example.TaxyBookingAndBilling.contract.request.LoginRequest;
 import com.example.TaxyBookingAndBilling.contract.request.RegistrationRequest;
+import com.example.TaxyBookingAndBilling.contract.response.RegistrationResponse;
 import com.example.TaxyBookingAndBilling.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/user/registration")
-    public Long userRegistration(@Valid @RequestBody RegistrationRequest request){
+    public RegistrationResponse userRegistration(@Valid @RequestBody RegistrationRequest request){
         return userService.userRegistration(request);
     }
     @PostMapping("/user/login")

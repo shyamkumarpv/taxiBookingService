@@ -5,12 +5,16 @@ import com.example.TaxyBookingAndBilling.contract.response.LoginResponse;
 import com.example.TaxyBookingAndBilling.contract.request.AddMoneyRequest;
 import com.example.TaxyBookingAndBilling.contract.request.LoginRequest;
 import com.example.TaxyBookingAndBilling.contract.request.RegistrationRequest;
+import com.example.TaxyBookingAndBilling.contract.response.RegistrationResponse;
 import com.example.TaxyBookingAndBilling.model.User;
 import com.example.TaxyBookingAndBilling.repository.UserRepository;
 import com.example.TaxyBookingAndBilling.security.JwtService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -28,79 +32,110 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
-@AutoConfigureMockMvc
 public class UserServiceTest {
-    @InjectMocks
-    private UserService userService;
-    @Mock
-    private ModelMapper modelMapper;
-    @Mock
     private UserRepository userRepository;
-    @Mock
-    private JwtService jwtService;
-    @Mock
+    private ModelMapper modelMapper;
     private PasswordEncoder passwordEncoder;
+    private UserService userService;
+    private JwtService jwtService;
 
-    @Before
+    @BeforeEach
     public void init() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
+        userRepository = Mockito.mock(UserRepository.class);
+        jwtService = Mockito.mock(JwtService.class);
+        modelMapper = new ModelMapper();
+        passwordEncoder = Mockito.mock(PasswordEncoder.class);
+        modelMapper = mock(ModelMapper.class);
+        userService = new UserService(userRepository, modelMapper, passwordEncoder, jwtService);
     }
 
+        @Test
+        public void testUserLogin () {
+            User user = User.builder()
+                    .name("name")
+                    .email("email")
+                    .password("password")
+                    .accountBalance(100.5d)
+                    .build();
+            Optional<User> ofResult = Optional.of(user);
+            when(userRepository.findByEmail(Mockito.<String>any())).thenReturn(ofResult);
+            when(jwtService.generateToken(Mockito.<UserDetails>any())).thenReturn("ABC123");
+            when(passwordEncoder.matches(Mockito.<CharSequence>any(), Mockito.<String>any())).thenReturn(true);
+            LoginResponse actualUserLoginResult = userService.userLogin(new LoginRequest("shysm@gmail.com", "hi"));
+            verify(userRepository).findByEmail(Mockito.<String>any());
+            verify(jwtService).generateToken(Mockito.<UserDetails>any());
+            verify(passwordEncoder).matches(Mockito.<CharSequence>any(), Mockito.<String>any());
+            assertEquals("ABC123", actualUserLoginResult.getToken());
+        }
+        @Test
+        public void addMoneyTest () {
+            AddMoneyRequest request = new AddMoneyRequest(1L, 1000L);
+            User user = User.builder()
+                    .id(1L)
+                    .name("Test User")
+                    .email("testuser@example.com")
+                    .accountBalance(0d)
+                    .password("encodedPassword")
+                    .build();
+
+            User updatedUser = User.builder()
+                    .id(1L)
+                    .name("Test User")
+                    .email("testuser@example.com")
+                    .accountBalance(1000d)
+                    .password("encodedPassword")
+                    .build();
+
+            UserRepository userRepository = mock(UserRepository.class);
+
+            when(userRepository.findById(request.getUserId())).thenReturn(Optional.of(user));
+            when(userRepository.save(any(User.class))).thenReturn(updatedUser);
+
+            UserService userService = new UserService(userRepository, modelMapper, passwordEncoder, jwtService);
+            boolean result = userService.addMoney(request);
+            assertTrue(result);
+            ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+            verify(userRepository, times(1)).save(userCaptor.capture());
+
+            User savedUserInService = userCaptor.getValue();
+            assertEquals(updatedUser.getAccountBalance(), savedUserInService.getAccountBalance());
+        }
     @Test
     public void testUserRegistration() {
-        User user = new User();
-        user.setAccountBalance(10.0d);
-        user.setEmail("shyam@gmail.com");
-        user.setId(1L);
-        user.setName("Name");
-        user.setPassword("complex");
-        when(userRepository.save(Mockito.<User>any())).thenReturn(user);
-        when(passwordEncoder.encode(Mockito.<CharSequence>any())).thenReturn("secret");
-        Long actualUserRegistrationResult = userService
-                .userRegistration(new RegistrationRequest("Name", "jane.doe@example.org", "iloveyou"));
-        verify(userRepository).save(Mockito.<User>any());
-        verify(passwordEncoder).encode(Mockito.<CharSequence>any());
-        Assertions.assertEquals(1L, actualUserRegistrationResult.longValue());
+
+        RegistrationRequest registrationRequest = new RegistrationRequest("Shyam", "shyam@Gmail.com", "password");
+        User user = modelMapper.map(registrationRequest, User.class);
+        RegistrationResponse expectedResponse =
+                modelMapper.map(user, RegistrationResponse.class);
+
+        when(modelMapper.map(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(user);
+
+        when(userRepository.existsByEmail(registrationRequest.getEmail())).thenReturn(true);
+        assertThrows(RuntimeException.class, () -> userService.userRegistration(registrationRequest));
+
+        when(userRepository.existsByEmail(registrationRequest.getEmail())).thenReturn(false);
+        when(passwordEncoder.encode("password")).thenReturn("password");
+
+        when(userRepository.save(any())).thenReturn(user);
+
+        RegistrationResponse actualResponse = userService.userRegistration(registrationRequest);
+
+        assertEquals(expectedResponse, actualResponse);
     }
 
     @Test
-    public void testAddMoney() {
-        User user = new User();
-        user.setAccountBalance(10.0d);
-        user.setEmail("shyam@gmail.com");
-        user.setId(1L);
-        user.setName("shyam");
-        user.setPassword("shyamjva");
-        Optional<User> ofResult = Optional.of(user);
-        when(userRepository.save(Mockito.<User>any())).thenReturn(user);
-        when(userRepository.findById(Mockito.<Long>any())).thenReturn(ofResult);
-        boolean actualAddMoneyResult = userService.addMoney(new AddMoneyRequest(1L, 10L));
-        verify(userRepository).findById(Mockito.<Long>any());
-        verify(userRepository).save(Mockito.<User>any());
-        Assertions.assertTrue(actualAddMoneyResult);
-    }
-    @Test
-    void testUserLogin() {
-        User user = new User();
-        user.setAccountBalance(10.0d);
-        user.setEmail("shyam@gmail.com");
-        user.setId(1L);
-        user.setName("Name");
-        user.setPassword("hi");
-        Optional<User> ofResult = Optional.of(user);
-        when(userRepository.findByEmail(Mockito.<String>any())).thenReturn(ofResult);
-        when(jwtService.generateToken(Mockito.<UserDetails>any())).thenReturn("ABC123");
-        when(passwordEncoder.matches(Mockito.<CharSequence>any(), Mockito.<String>any())).thenReturn(true);
-        LoginResponse actualUserLoginResult = userService.userLogin(new LoginRequest("shysm@gmail.com", "hi"));
-        verify(userRepository).findByEmail(Mockito.<String>any());
-        verify(jwtService).generateToken(Mockito.<UserDetails>any());
-        verify(passwordEncoder).matches(Mockito.<CharSequence>any(), Mockito.<String>any());
-        Assertions.assertEquals("ABC123", actualUserLoginResult.getToken());
+    public void testUserRegistration_EmailExists() {
+        RegistrationRequest request = new RegistrationRequest("John Doe", "john.doe@example.com", "password123");
+        when(userRepository.existsByEmail(request.getEmail())).thenReturn(true);
+
+        assertThrows(RuntimeException.class, () -> userService.userRegistration(request));
     }
 
 }
-

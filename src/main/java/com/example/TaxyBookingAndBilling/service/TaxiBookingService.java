@@ -4,6 +4,9 @@ import com.example.TaxyBookingAndBilling.constant.Status;
 import com.example.TaxyBookingAndBilling.contract.request.TaxiBookingRequest;
 import com.example.TaxyBookingAndBilling.contract.response.BookingCompletedResponse;
 import com.example.TaxyBookingAndBilling.contract.response.TaxiBookingResponse;
+import com.example.TaxyBookingAndBilling.exception.BookingNotFoundException;
+import com.example.TaxyBookingAndBilling.exception.InsufficientBalanceException;
+import com.example.TaxyBookingAndBilling.exception.TaxiNotAvailableException;
 import com.example.TaxyBookingAndBilling.model.Booking;
 import com.example.TaxyBookingAndBilling.model.Taxi;
 import com.example.TaxyBookingAndBilling.model.User;
@@ -32,10 +35,10 @@ public class TaxiBookingService {
         User user =
                 userRepository
                         .findById(userId)
-                        .orElseThrow(() -> new RuntimeException("User not found"));
+                        .orElseThrow(() -> new EntityNotFoundException("User not found"));
         List<Taxi> availableTaxis = searchNearestTaxi(request.getPickupLocation());
         if (availableTaxis.isEmpty()) {
-            throw new RuntimeException("No taxis available at the pickup location");
+            throw new TaxiNotAvailableException();
         }
         Taxi nearestTaxi = availableTaxis.get(0);
 
@@ -57,9 +60,9 @@ public class TaxiBookingService {
         List<Taxi> availableTaxis =
                 taxiRepository.findAll().stream()
                         .filter(taxi -> taxi.getCurrentLocation().equals(pickupLocation))
-                        .collect(Collectors.toList());
+                        .toList();
         if (availableTaxis.isEmpty()) {
-            throw new RuntimeException("No taxis available at the pickup location");
+            throw new TaxiNotAvailableException();
         }
         return availableTaxis.stream()
                 .map(taxi -> modelMapper.map(taxi, Taxi.class))
@@ -70,7 +73,7 @@ public class TaxiBookingService {
         Booking booking =
                 bookingRepository.findById(id)
                         .orElseThrow(
-                                () -> new EntityNotFoundException("booking not found with id " + id));
+                                BookingNotFoundException::new);
         return modelMapper.map(booking, TaxiBookingResponse.class);
 
     }
@@ -78,7 +81,7 @@ public class TaxiBookingService {
         Booking booking =
                 bookingRepository
                         .findById(bookingId)
-                        .orElseThrow(() -> new RuntimeException("Booking not found"));
+                        .orElseThrow(BookingNotFoundException::new);
         booking =
                 Booking.builder()
                         .id(booking.getId())
@@ -96,10 +99,9 @@ public class TaxiBookingService {
     public BookingCompletedResponse bookingCompleted(long userId, long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(
-                        () -> new EntityNotFoundException("Booking not found"));
+                        BookingNotFoundException::new);
         Long taxiId = booking.getTaxiId().getId();
         Double balance = booking.getUserId().getAccountBalance();
-//        Long userId = booking.getUserId().getId();
         Double fare = booking.getFare();
         Taxi taxi = taxiRepository.findById(taxiId)
                 .orElseThrow(
@@ -109,12 +111,8 @@ public class TaxiBookingService {
                 .orElseThrow(
                         () -> new EntityNotFoundException("User not found "));
         if (balance < fare) {
-            throw new RuntimeException("Insufficient balance to book this ride, please recharge");
+            throw new InsufficientBalanceException();
         } else {
-//            booking.setDistance(request.getDistance());
-//            booking.setFare(user.getAccountBalance()-fare);
-//            bookingRepository.save(booking);
-//            taxi.setAvailable(true);
             Booking booking1 = Booking.builder()
                     .taxiId(taxi)
                     .userId(user)
@@ -125,13 +123,7 @@ public class TaxiBookingService {
                     .status(Status.CONFIRMED)
                     .build();
             taxiRepository.save(taxi);
-//            user.setAccountBalance(balance-fare);
-//            userRepository.save(user);
-//
-//            BookingCompletedResponse response =new BookingCompletedResponse();
-//            response.setId(booking.getId());
-//            response.setFare(fare);
-//            response.setDistance(request.getDistance());
+
             User savedUser = User.builder()
                     .id(userId)
                     .email(user.getEmail())

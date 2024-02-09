@@ -7,6 +7,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import java.util.function.Function;
@@ -19,7 +20,10 @@ import java.util.Map;
 
 @Service
 public class JwtService {
-    private static final String SECRET_KEY = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
+//    @Value("${security.jwt.secret-key}")
+//    private String SECRET_KEY;
+    private static final String SECRET_KEY = System.getenv("SECRET_KEY");
+
     public String extractUsername(String token) {
         return extractClaim(token,Claims::getSubject);
     }

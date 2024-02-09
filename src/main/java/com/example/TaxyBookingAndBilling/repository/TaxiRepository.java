@@ -8,6 +8,5 @@ import java.util.List;
 
 @Repository
 public interface TaxiRepository extends JpaRepository<Taxi,Long> {
-    List<Taxi> findByCurrentLocationAndIsAvailable(String currentLocation, boolean isAvailable);
 
 }
